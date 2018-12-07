@@ -9,12 +9,34 @@ Created on Tue Dec  4 18:59:29 2018
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import itertools
 
-path_dir = '/Users/wassy/Documents/fall_2018/am205/final_project/github/faces94/male/9338446/'
+
+dirs = ['9326871/', '9332898/', '9338446/', '9338454/' ,'9338462/']
+
+path_dir = '/Users/wassy/Documents/fall_2018/am205/final_project/github/faces94/male/'
 leaf_mats = []
 leaf_unchanged = []
 
-for f in os.listdir(path_dir)[:len(os.listdir(path_dir)) - 1]:
+file_paths = []
+for k in range(len(dirs)):
+    temp = os.listdir(path_dir + dirs[k])
+    for j in range(len(temp)):
+        file_paths.append(dirs[k] +temp[j])
+        
+test_paths = file_paths[3::4]
+test_paths.append('9338527/9338527.8.jpg')
+
+del file_paths[3::4]
+pic_list = file_paths
+
+
+train_class = list(itertools.chain.from_iterable(itertools.repeat(x, 15) for x in dirs))
+test_class = list(itertools.chain.from_iterable(itertools.repeat(x, 5) for x in dirs))
+test_class.append('9338527/')
+
+
+for f in pic_list:
     im = plt.imread(path_dir+f) # read image as 3D numpy array
     leaf_unchanged.append(im)
     S = np.subtract(1,im) # S = 1-p
@@ -24,9 +46,9 @@ for f in os.listdir(path_dir)[:len(os.listdir(path_dir)) - 1]:
 
     leaf_mats.append(gr)
     
-test_set = []
+test_set = []  
 test_unchanged = []
-for f in os.listdir(path_dir)[len(os.listdir(path_dir)) - 1:]:
+for f in test_paths:
     im = plt.imread(path_dir+f) # read image as 3D numpy array
     S = np.subtract(1,im) # S = 1-p
     # Make a col vector of the image [row by row] [R --> G --> B]
@@ -55,8 +77,8 @@ G = G / L
 eva = np.linalg.eig(G)[0]
 evec = np.linalg.eig(G)[1]
     
-k = 8
-max_places = eva.argsort()[-k:][::-1]
+components = 8
+max_places = eva.argsort()[-components:][::-1]
     
 
 
@@ -65,38 +87,40 @@ max_vector = evec[:, max_places]
 def make_feature_matrix(sample_image,max_vector, d):
     feature_matrix = []
     for i in range(d):
+        sample_image.astype(float)        
         feature_matrix.append(np.matmul(sample_image,max_vector[:,i]))
-    return(feature_matrix)
+    return(np.array(feature_matrix))
 
 def distance_function(samp1, samp2,d):
     total_distance = 0 
+    feat1 = make_feature_matrix( samp1 , max_vector,d)
+    feat2 = make_feature_matrix( samp2 , max_vector,d )
     for l in range(d):
-        feat1 = make_feature_matrix( samp1 , max_vector,l )
-        feat2 = make_feature_matrix( samp2 , max_vector,l )
-        total_distance = total_distance + np.linalg.norm(np.array(feat1) - np.array(feat2))
+        total_distance = total_distance + np.linalg.norm(np.array(feat1[l]) - np.array(feat2[l]))
     return(total_distance)
 
+guess_class = []
+correct = []
 for k in range(len(test_set)):
-    test = make_feature_matrix(test_set[k], max_vector, 8)
+    test = make_feature_matrix(test_set[k], max_vector, components)
     
     distance_to_each = []
     for i in range(len(leaf_mats)):
-        distance_to_each.append(distance_function(test_set[k], leaf_mats[i] ,8 ))
+        distance_to_each.append(distance_function(test_set[k], leaf_mats[i] ,components))
     
     
     min(distance_to_each)
     min_ind = distance_to_each.index(   min(distance_to_each))
+    print("nearest neighbor:" + str(k) )
     plt.imshow(leaf_unchanged[min_ind])
     plt.show()
+    print("test image" + str(k) )
     plt.imshow(test_unchanged[k])
+    guess_class.append(train_class[min_ind])
+    print(pic_list[min_ind])
+    if train_class[min_ind] == test_class[k]:
+        correct.append(1)
+    else:
+        correct.append(0)
 
-# Reshape and plot S_avg as a picture
-#m = 200
-#n = 180
-#d = 3
-#S_reformatted = S_avg.reshape((m,n,d)) # recast to 3D matrix
-#S_reformatted_rgb = np.subtract(1,S_reformatted) # recast to RGB
-#
-#plt.figure()
-#plt.imshow(S_reformatted_rgb)
-#plt.show()
+print(sum(correct)/ len(correct))
