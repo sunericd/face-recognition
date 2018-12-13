@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import os
 import itertools
 import random
+from numpy import newaxis
+
 
 #for per_section in range(1,20):
 path_dir = '/Users/wassy/Documents/fall_2018/am205/final_project/github/faces94/male/'
@@ -69,7 +71,7 @@ def run_2dpca(components,num_classes,per_section,dirs, path_dir):
     evec = np.linalg.eig(G)[1]    
     max_places = eva.argsort()[-components:][::-1]
     max_vector = evec[:, max_places]
-    return(max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged)
+    return(max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged, S_avg)
 
     
 def make_feature_matrix(sample_image,max_vector, d):
@@ -125,7 +127,7 @@ def graph_results(x_values, y_values, file_name):
 #number in test set
 accuracy_per_section= []
 for u in range(1,20 ):
-    max_vector, train_class, test_class, leaf_mats, test_set  ,leaf_unchanged, test_unchanged  =  run_2dpca( 3, 12, u, dirs, path_dir )
+    max_vector, train_class, test_class, leaf_mats, test_set  ,leaf_unchanged, test_unchanged ,avg_face =  run_2dpca( 3, 12, u, dirs, path_dir )
     accuracy_per_section.append( score(test_set, leaf_mats, train_class,test_class, 3, leaf_unchanged, test_unchanged  ) )
 graph_results(   range(1,20 ), accuracy_per_section, "test_function_test_set") 
     # Run 1D PCA --> get PCs, eigvals, average face across all classes, average faces per class, test images
@@ -134,7 +136,7 @@ graph_results(   range(1,20 ), accuracy_per_section, "test_function_test_set")
 #number of classes
 accuracy_per_section= []
 for u in range(1,12 ):
-    max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged  =  run_2dpca( 3, u, 4, dirs, path_dir )
+    max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged ,avg_face =  run_2dpca( 3, u, 4, dirs, path_dir )
     accuracy_per_section.append( score(test_set, leaf_mats, train_class,test_class, 3, leaf_unchanged, test_unchanged  ) )
 graph_results(   range(1,12 ), accuracy_per_section, "test_function_classes") 
      
@@ -142,9 +144,30 @@ graph_results(   range(1,12 ), accuracy_per_section, "test_function_classes")
 #components
 accuracy_per_section= []
 for u in range(1,12 ):
-    max_vector, train_class, test_class, leaf_mats, test_set ,leaf_unchanged,test_unchanged=  run_2dpca( u, 12, 4, dirs, path_dir )
+    max_vector, train_class, test_class, leaf_mats, test_set ,leaf_unchanged,test_unchanged ,avg_face=  run_2dpca( u, 12, 4, dirs, path_dir )
     accuracy_per_section.append( score(test_set, leaf_mats, train_class,test_class, u, leaf_unchanged, test_unchanged  ) )
 graph_results(   range(1,12 ), accuracy_per_section, "test_function_components") 
 
-max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged =  run_2dpca( 1, 12, 19, dirs, path_dir )
+max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged,avg_face =  run_2dpca( 1, 12, 19, dirs, path_dir )
 print( score(test_set, leaf_mats, train_class,test_class, 1, leaf_unchanged, test_unchanged ) )
+
+
+
+
+
+tt = np.array([[1,2,3], [4,5,6], [7,8,9], [11,12,13], [14,15,16], [17,18,19]])
+t1 = tt[3 : 6, 0 : 3]
+t2 = tt[0 : 3, 0 : 3]
+tt.reshape(3,3,)
+np.concatenate((t1,t2), axis = 3)
+
+
+
+avg_for_show= np.empty((200,180,3))
+for i in range(200):
+    for j in range(180):
+        for k in range(3):
+            avg_for_show[i,j,k] = avg_face[ i+k *3 ,j ]
+
+plt.imshow(np.subtract(1,avg_for_show))
+
