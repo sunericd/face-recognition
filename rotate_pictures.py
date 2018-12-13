@@ -35,9 +35,8 @@ def rotate_whole_picture(path, angle):
     rotated = imutils.rotate_bound(image, angle)
     return(rotated)
     
-pic2 = rotate_whole_picture(path_dir,15)
+pic2 = rotate_whole_picture(path_dir,-15)
     
-cv2.imshow("Rotated (Correct)", pic1)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+plt.imshow( pic1)
+plt.imshow(pic2)
 
