@@ -18,7 +18,7 @@ path_dir = '/Users/wassy/Documents/fall_2018/am205/final_project/github/faces94/
 dirs = ["9326871/", "9332898/", "9338446_Star/", "9338454/", "9338462/", "9338489/", "9338497/", "9338519/", "9338527/", "9338543/","9414649/", "9416994/"]
 
 
-
+#takes in number of principal components, classes, and  test set, and returns test and train images, and principle components among other things
 def run_2dpca(components,num_classes,per_section,dirs, path_dir):
     dirs = dirs[:num_classes]
     leaf_mats = []
@@ -76,7 +76,7 @@ def run_2dpca(components,num_classes,per_section,dirs, path_dir):
     max_vector = evec[:, max_places]
     return(max_vector, train_class, test_class, leaf_mats, test_set, leaf_unchanged, test_unchanged, S_avg)
 
-    
+        #calculates the feature matrix
 def make_feature_matrix(sample_image,max_vector, d):
     feature_matrix = []
     for i in range(0,d):
@@ -84,6 +84,7 @@ def make_feature_matrix(sample_image,max_vector, d):
         feature_matrix.append(np.matmul(sample_image,max_vector[:,i]))
     return(np.array(feature_matrix))
 
+#calculates distances between feature matrix
 def distance_function(samp1, samp2,d):
     total_distance = 0 
     feat1 = make_feature_matrix( samp1 , max_vector,d)
@@ -92,6 +93,7 @@ def distance_function(samp1, samp2,d):
         total_distance = total_distance + np.linalg.norm(np.array(feat1[l]) - np.array(feat2[l]))
     return(total_distance)
 
+#determines if nearest neighbor was the correct class
 def score(test_set, leaf_mats, train_class,test_class, components,leaf_unchanged,test_unchanged ):
     guess_class = []
     correct = []
@@ -112,6 +114,8 @@ def score(test_set, leaf_mats, train_class,test_class, components,leaf_unchanged
             correct.append(0)
     return(sum(correct)/ len(correct))
 
+
+#graphs the rests
 def graph_results(x_values, y_values, file_name, color, title, xmin, xmax):
     fig, ax = plt.subplots()
     ax.plot(x_values, y_values, color[0])
@@ -122,6 +126,8 @@ def graph_results(x_values, y_values, file_name, color, title, xmin, xmax):
     ax.set_ylim(0,1.05)
     plt.tight_layout()
     plt.savefig('/Users/wassy/Documents/fall_2018/am205/final_project/github/wassy_pictures/' + file_name, dpi=500)
+
+#hold all else constand and alter...
 
 #number in test set
 accuracy_per_section= []
@@ -157,13 +163,14 @@ print( score(test_set, leaf_mats, train_class,test_class, 3, leaf_unchanged, tes
 
 
 
-
-
-avg_for_show= np.empty((200,180,3))
-for i in range(200):
-    for j in range(180):
-        for k in range(3):
-            avg_for_show[i,j,k] = avg_face[ i+k *3 ,j ]
-
-plt.imshow(np.subtract(1,avg_for_show))
+#attempt to show the avg matrix
+#
+#
+#avg_for_show= np.empty((200,180,3))
+#for i in range(200):
+#    for j in range(180):
+#        for k in range(3):
+#            avg_for_show[i,j,k] = avg_face[ i+k *3 ,j ]
+#
+#plt.imshow(np.subtract(1,avg_for_show))
 
